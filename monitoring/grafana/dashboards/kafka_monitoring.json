@@ -404,13 +404,13 @@
       "pluginVersion": "7.5.5",
       "targets": [
         {
-          "expr": "kafka_topic_partition_size_bytes",
+          "expr": "kafka_topic_partition_current_offset",
           "interval": "",
           "legendFormat": "{{topic}}-{{partition}}",
           "refId": "A"
         }
       ],
-      "title": "Topic Partition Size",
+      "title": "Topic Partition Offset (Message Count)",
       "type": "timeseries"
     }
   ],

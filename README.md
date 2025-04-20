@@ -97,9 +97,6 @@ The repository is organized with the following structure:
 /
 ├── docker-compose.yml           # Main Docker Compose configuration
 ├── README.md                    # Project documentation
-├── scripts/                     # Helper scripts
-│   ├── setup.sh                 # Setup script
-│   └── teardown.sh              # Cleanup script
 ├── producer/                    # Producer application
 │   ├── Dockerfile               # Producer Docker configuration
 │   ├── requirements.txt         # Python dependencies
@@ -171,7 +168,7 @@ The repository is organized with the following structure:
    docker compose up -d --build
    ```
 
-   This will automatically start 2 consumer instances to match the 6 Kafka partitions as configured in the `docker-compose.yml` file.
+   This will automatically start all services including multiple consumer instances (consumer-1 and consumer-2) as configured in the `docker-compose.yml` file.
 
 This will start:
 
@@ -179,12 +176,13 @@ This will start:
 - Kafka
 - MongoDB
 - Producer service
-- Consumer service
+- Multiple Consumer instances (consumer-1, consumer-2)
 - Prometheus
 - Grafana
 
 3. Access the monitoring dashboard:
    - Grafana: http://localhost:3000 (default credentials: admin/admin)
+   - Kafka UI: http://localhost:8080
 
 ### Local Development Setup
 
@@ -275,13 +273,71 @@ The consumer is configured through a JSON file located at `consumer/config/confi
 }
 ```
 
-### Scaling
+### Accessing MongoDB Data
 
-To scale the number of consumers:
+To access and inspect the data stored in MongoDB, you can use the `docker exec` command to enter the MongoDB container:
 
 ```bash
-docker-compose up -d --scale consumer=3
+# Access the MongoDB container
+docker exec -it <container name or id> mongosh
 ```
+
+Once inside the MongoDB shell, you can run various commands to explore the data:
+
+```bash
+# List all databases
+show dbs
+
+# Switch to the database used by the application
+use pubsub_data
+
+# List all collections in the current database
+db.getCollectionNames()
+
+# View data in a collection (we use the collection name "messages" in this project)
+db.messages.find()
+```
+
+To exit the MongoDB shell, type `exit` or press Ctrl+D.
+
+For more advanced queries, refer to the [MongoDB documentation](https://docs.mongodb.com/manual/reference/method/db.collection.find/).
+
+### Scaling
+
+To add more consumer instances, you can modify the docker-compose.yml file by adding new consumer services with unique names:
+
+```yaml
+# Example of adding a new consumer instance
+consumer-3:
+  build:
+    context: ./consumer
+  depends_on:
+    kafka:
+      condition: service_healthy
+    mongodb:
+      condition: service_healthy
+  ports:
+    - "8003:8001"
+  restart: on-failure
+```
+
+After updating the docker-compose.yml file, you can apply the changes with:
+
+```bash
+docker compose up -d
+```
+
+Make sure to also update the Prometheus configuration in `monitoring/prometheus/prometheus.yml` to monitor the new consumer instance:
+
+```yaml
+- job_name: "consumer-3"
+  static_configs:
+    - targets: ["consumer-3:8001"]
+  metrics_path: "/metrics"
+  scrape_interval: 15s
+```
+
+Additionally, you may want to update the Grafana dashboard to include the new consumer instance monitoring panels.
 
 ### Running Tests
 
@@ -490,13 +546,14 @@ The Consumer module implements the following specific requirements:
    - Consumer sends failed messages to the dead letter topic when MongoDB connections fail
    - No explicit topic creation is needed as topics are created on first use
 
-8. **Auto-Scaling Configuration**:
-   - The system is pre-configured to run 2 consumer instances to match the 6 Kafka partitions
-   - In `docker-compose.yml`, consumer service uses `deploy: replicas: 2` to automatically start multiple instances
-   - This eliminates the need to manually scale with `docker-compose up -d --scale consumer=2`
-   - Ensure the number of replicas always matches `KAFKA_NUM_PARTITIONS` if you change partition count
+8. **Scaling Configuration**:
+   - The system is pre-configured to run multiple named consumer instances (consumer-1, consumer-2)
+   - Each consumer instance is defined as a separate service in `docker-compose.yml`
+   - Each instance has its own dedicated monitoring in Prometheus and Grafana
+   - To add more consumers, add new service definitions to docker-compose.yml with appropriate port mappings
+   - Make corresponding changes to monitoring configurations for new consumer instances
 
-The number of consumer instances is automatically set to match the number of Kafka topic partitions for optimal performance. This configuration is specified in the docker-compose.yml file using the `deploy` section.
+The number of consumer instances should ideally match the number of Kafka topic partitions for optimal performance. Currently, the system is configured with 6 partitions as specified in the docker-compose.yml file under the Kafka service configuration.
 
 ### Persistence Interface
 

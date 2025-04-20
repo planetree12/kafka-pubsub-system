@@ -44,18 +44,24 @@ scrape_configs:
     scrape_interval: 30s
 
   # Producer metrics - once the service is uncommented and metrics endpoint is added
-  # - job_name: "producer"
-  #   static_configs:
-  #     - targets: ["producer:8000"]
-  #   metrics_path: "/metrics"
-  #   scrape_interval: 15s
+  - job_name: "producer"
+    static_configs:
+      - targets: ["producer:8000"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
 
   # Consumer metrics - once the service is uncommented and metrics endpoint is added
-  # - job_name: "consumer"
-  #   static_configs:
-  #     - targets: ["consumer:8000"]
-  #   metrics_path: "/metrics"
-  #   scrape_interval: 15s
+  - job_name: "consumer-1"
+    static_configs:
+      - targets: ["consumer-1:8001"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+
+  - job_name: "consumer-2"
+    static_configs:
+      - targets: ["consumer-2:8001"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
 
   # Node exporter for host system metrics (CPU, memory, disk, etc.)
   - job_name: "node"

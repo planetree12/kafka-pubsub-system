@@ -47,8 +47,7 @@ class ProducerMetrics:
         # Error rate
         self.message_send_failures = Counter(
             "producer_message_send_failures_total",
-            "Total number of message send failures",
-            ["error_type"]
+            "Total number of message send failures"
         )
 
         # Message send latency
@@ -105,17 +104,22 @@ class ProducerMetrics:
 
         self.batch_size.observe(batch_size)
 
-    def record_send_failure(self, error_type: str) -> None:
+    def record_send_failure(self, error_type: str = None, count: int = 1) -> None:
         """
         Record a message send failure.
 
         Args:
             error_type: The type of error that occurred.
+            count: Number of errors to record.
         """
         if not self.enabled:
             return
 
-        self.message_send_failures.labels(error_type=error_type).inc()
+        # Log the error type for debugging
+        if error_type:
+            logger.debug(f"Recording send failure of type: {error_type}")
+
+        self.message_send_failures.inc(count)
 
     def time_send_operation(self):
         """

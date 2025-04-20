@@ -124,10 +124,12 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+    ports:
+      - "8000:8000"
     restart: on-failure
 
   # Consumer Service
-  consumer:
+  consumer-1:
     build:
       context: ./consumer
     depends_on:
@@ -135,8 +137,20 @@ services:
         condition: service_healthy
       mongodb:
         condition: service_healthy
-    deploy:
-      replicas: 2 # Match the number of Kafka partitions (KAFKA_NUM_PARTITIONS)
+    ports:
+      - "8001:8001"
+    restart: on-failure
+  # Consumer Service
+  consumer-2:
+    build:
+      context: ./consumer
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "8002:8001"
     restart: on-failure
 
   # Monitoring - Prometheus & Grafana
