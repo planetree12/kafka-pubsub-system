@@ -97,9 +97,11 @@ The repository is organized with the following structure:
 /
 ├── docker-compose.yml           # Main Docker Compose configuration
 ├── README.md                    # Project documentation
+├── .gitignore                   # Git ignore rules
 ├── producer/                    # Producer application
 │   ├── Dockerfile               # Producer Docker configuration
 │   ├── requirements.txt         # Python dependencies
+│   ├── setup.py                 # Python package setup
 │   ├── src/                     # Source code
 │   │   ├── __init__.py
 │   │   ├── producer.py          # Main producer class
@@ -113,10 +115,13 @@ The repository is organized with the following structure:
 │   │   └── config.json          # Producer configuration
 │   └── tests/                   # Tests
 │       ├── __init__.py
-│       └── test_producer.py     # Producer tests
+│       ├── test_producer.py     # Producer tests
+│       └── test_data_generator.py # Data generator tests
 ├── consumer/                    # Consumer application
 │   ├── Dockerfile               # Consumer Docker configuration
 │   ├── requirements.txt         # Python dependencies
+│   ├── setup.py                 # Python package setup
+│   ├── SPECIFICATION.md         # Consumer specific design details
 │   ├── src/                     # Source code
 │   │   ├── __init__.py
 │   │   ├── consumer.py          # Main consumer class
@@ -127,18 +132,24 @@ The repository is organized with the following structure:
 │   │       ├── config.py        # Configuration loading
 │   │       ├── logging.py       # Logging setup
 │   │       └── metrics.py       # Metrics collection
+│   ├── config/                  # Configuration files
+│   │   └── config.json          # Consumer configuration
 │   └── tests/                   # Tests
 │       ├── __init__.py
-│       └── test_consumer.py     # Consumer tests
+│       ├── test_consumer.py     # Consumer tests
+│       ├── test_storage.py      # Storage tests
+│       ├── test_utils.py        # Utility tests
+│       └── test_data_processor.py # Data processor tests
 ├── monitoring/                  # Monitoring configuration
 │   ├── prometheus/              # Prometheus configuration
 │   │   └── prometheus.yml       # Prometheus config file
 │   └── grafana/                 # Grafana configuration
 │       ├── datasource.yml       # Data source configuration
 │       └── dashboards/          # Dashboard configurations
-│           ├── kafka.json       # Kafka monitoring dashboard
-│           ├── producer.json    # Producer monitoring dashboard
-│           └── consumer.json    # Consumer monitoring dashboard
+│           ├── dashboard.yml        # Grafana dashboard provider config
+│           ├── system_overview.json # System overview dashboard
+│           ├── application_monitoring.json # Application monitoring dashboard
+│           └── kafka_monitoring.json # Kafka monitoring dashboard
 └── docs/                        # Additional documentation
     ├── architecture.md          # Detailed architecture description
     ├── installation.md          # Installation guide
