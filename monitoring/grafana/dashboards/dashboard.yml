@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: "Kafka Pub/Sub System"
+    orgId: 1
+    folder: "Kafka Monitoring"
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

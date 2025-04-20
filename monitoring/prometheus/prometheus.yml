@@ -1,0 +1,64 @@
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds
+  evaluation_interval: 15s # Evaluate rules every 15 seconds
+  scrape_timeout: 10s # Timeout after 10 seconds
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Kafka metrics - requires kafka-exporter to be deployed
+  - job_name: "kafka"
+    static_configs:
+      - targets: ["kafka-exporter:9308"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  # Zookeeper metrics - requires zookeeper-exporter to be deployed
+  - job_name: "zookeeper"
+    static_configs:
+      - targets: ["zookeeper-exporter:9141"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  # MongoDB metrics - requires mongodb-exporter to be deployed
+  - job_name: "mongodb"
+    static_configs:
+      - targets: ["mongodb-exporter:9216"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  # Producer metrics - once the service is uncommented and metrics endpoint is added
+  # - job_name: "producer"
+  #   static_configs:
+  #     - targets: ["producer:8000"]
+  #   metrics_path: "/metrics"
+  #   scrape_interval: 15s
+
+  # Consumer metrics - once the service is uncommented and metrics endpoint is added
+  # - job_name: "consumer"
+  #   static_configs:
+  #     - targets: ["consumer:8000"]
+  #   metrics_path: "/metrics"
+  #   scrape_interval: 15s
+
+  # Node exporter for host system metrics (CPU, memory, disk, etc.)
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 30s
