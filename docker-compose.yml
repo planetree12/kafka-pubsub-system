@@ -124,30 +124,20 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-    environment:
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      KAFKA_TOPIC: data-topic
-      PRODUCER_INTERVAL_MS: 100
-      PRODUCER_BATCH_SIZE: 100
-      LOG_LEVEL: INFO
     restart: on-failure
 
-  # # Consumer Service
-  # consumer:
-  #   build:
-  #     context: ./consumer
-  #   depends_on:
-  #     - kafka
-  #     - mongodb
-  #   environment:
-  #     KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-  #     KAFKA_TOPIC: data-topic
-  #     CONSUMER_GROUP_ID: data-consumer-group
-  #     CONSUMER_AUTO_OFFSET_RESET: earliest
-  #     MONGODB_URI: mongodb://mongodb:27017/
-  #     MONGODB_DATABASE: pubsub_data
-  #     MONGODB_COLLECTION: messages
-  #     LOG_LEVEL: INFO
+  # Consumer Service
+  consumer:
+    build:
+      context: ./consumer
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    deploy:
+      replicas: 2 # Match the number of Kafka partitions (KAFKA_NUM_PARTITIONS)
+    restart: on-failure
 
   # Monitoring - Prometheus & Grafana
   prometheus:

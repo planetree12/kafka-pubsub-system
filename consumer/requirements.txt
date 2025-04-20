@@ -1,0 +1,5 @@
+confluent-kafka==2.3.0
+pymongo==4.6.1
+prometheus-client==0.18.0
+python-json-logger==2.0.7
+tenacity==8.2.3

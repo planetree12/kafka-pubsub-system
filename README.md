@@ -96,7 +96,6 @@ The repository is organized with the following structure:
 ```
 /
 ├── docker-compose.yml           # Main Docker Compose configuration
-├── .env                         # Environment variables
 ├── README.md                    # Project documentation
 ├── scripts/                     # Helper scripts
 │   ├── setup.sh                 # Setup script
@@ -167,9 +166,12 @@ The repository is organized with the following structure:
    ```
 
 2. Start the system using Docker Compose:
+
    ```bash
    docker compose up -d --build
    ```
+
+   This will automatically start 2 consumer instances to match the 6 Kafka partitions as configured in the `docker-compose.yml` file.
 
 This will start:
 
@@ -211,7 +213,7 @@ For local development without Docker:
 
 ### Configuration
 
-The system can be configured using JSON configuration files or environment variables:
+The system is configured using JSON configuration files:
 
 #### Producer Configuration
 
@@ -220,7 +222,7 @@ The producer is configured through a JSON file located at `producer/config/confi
 ```json
 {
   "kafka": {
-    "bootstrap_servers": "kafka:9092",
+    "bootstrap_servers": "kafka:29092",
     "topic": "data-topic",
     "compression_type": "snappy"
   },
@@ -248,13 +250,6 @@ The producer service continuously generates and sends messages to Kafka based on
 
 With the default configuration, the producer will generate and send approximately 100,000 messages per hour to Kafka in a continuous stream.
 
-Environment variables can also be used to override configuration:
-
-- `KAFKA_BOOTSTRAP_SERVERS`: Comma-separated list of Kafka broker addresses
-- `KAFKA_TOPIC`: The Kafka topic to publish to
-- `PRODUCER_INTERVAL_MS`: Interval between batches in milliseconds
-- `PRODUCER_BATCH_SIZE`: Number of messages to send in each batch
-
 #### Consumer Configuration
 
 The consumer is configured through a JSON file located at `consumer/config/config.json`:
@@ -279,12 +274,6 @@ The consumer is configured through a JSON file located at `consumer/config/confi
   }
 }
 ```
-
-Environment variables can also be used to override configuration:
-
-- `CONSUMER_GROUP_ID`: The Kafka consumer group ID
-- `MONGODB_URI`: The MongoDB connection string
-- `MONGODB_DATABASE`: The MongoDB database name
 
 ### Scaling
 
@@ -458,6 +447,56 @@ class DataConsumer:
         """Run the consumer main loop"""
         pass
 ```
+
+### Consumer Specifications
+
+The Consumer module implements the following specific requirements:
+
+1. **Direct Persistence**: Messages from Kafka are stored directly in MongoDB without additional processing or filtering.
+
+2. **Data Model**:
+
+   - MongoDB collection with fields: `message_id`, `name`, `created_at`
+   - Index on `created_at` field for efficient time-based queries
+
+3. **Error Handling**:
+
+   - Failed MongoDB connections result in messages being redirected to a Kafka dead letter topic
+   - Retry mechanisms with configurable attempts and backoff strategy
+
+4. **Performance Optimization**:
+
+   - Batch processing for MongoDB writes to improve throughput
+   - Number of consumer instances equals the number of Kafka partitions
+   - Internal parallel processing for message handling
+
+5. **Monitoring Metrics**:
+
+   - Message consumption rate (messages processed per second)
+   - Processing error rate
+   - MongoDB write latency
+   - Consumer lag (messages pending in Kafka)
+
+6. **Multiple Consumer Instances**:
+
+   - MongoDB initialization (particularly index creation) is implemented in an idempotent manner to handle multiple concurrent consumer instances
+   - Each consumer instance checks if required indexes exist before creating them
+   - This approach prevents errors when scaling to multiple consumer instances
+
+7. **Dead Letter Queue**:
+
+   - Dead letter topic ("dead-letter-topic") is automatically created by Kafka when needed
+   - Kafka is configured with `KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"` which creates topics on demand
+   - Consumer sends failed messages to the dead letter topic when MongoDB connections fail
+   - No explicit topic creation is needed as topics are created on first use
+
+8. **Auto-Scaling Configuration**:
+   - The system is pre-configured to run 2 consumer instances to match the 6 Kafka partitions
+   - In `docker-compose.yml`, consumer service uses `deploy: replicas: 2` to automatically start multiple instances
+   - This eliminates the need to manually scale with `docker-compose up -d --scale consumer=2`
+   - Ensure the number of replicas always matches `KAFKA_NUM_PARTITIONS` if you change partition count
+
+The number of consumer instances is automatically set to match the number of Kafka topic partitions for optimal performance. This configuration is specified in the docker-compose.yml file using the `deploy` section.
 
 ### Persistence Interface
 

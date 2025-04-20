@@ -51,7 +51,7 @@ CONFIG_SCHEMA = {
 
 def load_config(config_path: str) -> Dict[str, Any]:
     """
-    Load configuration from the specified JSON file and environment variables.
+    Load configuration from the specified JSON file.
 
     Args:
         config_path: Path to the configuration file.
@@ -62,7 +62,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
     # Default configuration matching the schema
     default_config = {
         "kafka": {
-            "bootstrap_servers": "kafka:9092",
+            "bootstrap_servers": "kafka:29092",
             "topic": "data-topic",
             "compression_type": "snappy"
         },
@@ -91,19 +91,6 @@ def load_config(config_path: str) -> Dict[str, Any]:
             default_config["producer"].update(file_config.get("producer", {}))
             default_config["logging"].update(file_config.get("logging", {}))
             default_config["metrics"].update(file_config.get("metrics", {}))
-
-    # Override with environment variables if present
-    if os.getenv("KAFKA_BOOTSTRAP_SERVERS"):
-        default_config["kafka"]["bootstrap_servers"] = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
-
-    if os.getenv("KAFKA_TOPIC"):
-        default_config["kafka"]["topic"] = os.getenv("KAFKA_TOPIC")
-
-    if os.getenv("PRODUCER_INTERVAL_MS"):
-        default_config["producer"]["interval_ms"] = int(os.getenv("PRODUCER_INTERVAL_MS"))
-
-    if os.getenv("PRODUCER_BATCH_SIZE"):
-        default_config["producer"]["batch_size"] = int(os.getenv("PRODUCER_BATCH_SIZE"))
 
     # Validate configuration
     validate(instance=default_config, schema=CONFIG_SCHEMA)

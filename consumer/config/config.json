@@ -1,0 +1,30 @@
+{
+  "kafka": {
+    "bootstrap_servers": "kafka:29092",
+    "topic": "data-topic",
+    "group_id": "data-consumer-group",
+    "dead_letter_topic": "dead-letter-topic",
+    "auto_offset_reset": "earliest",
+    "enable_auto_commit": false,
+    "poll_timeout_ms": 1000
+  },
+  "mongodb": {
+    "uri": "mongodb://mongodb:27017",
+    "database": "pubsub_data",
+    "collection": "messages"
+  },
+  "consumer": {
+    "batch_size": 100,
+    "offset_commit_frequency": 1000,
+    "max_retries": 3,
+    "retry_backoff_ms": 1000
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json"
+  },
+  "metrics": {
+    "enabled": true,
+    "port": 8001
+  }
+}

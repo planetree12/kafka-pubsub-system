@@ -1,11 +1,11 @@
 {
   "kafka": {
-    "bootstrap_servers": "kafka:9092",
+    "bootstrap_servers": "kafka:29092",
     "topic": "data-topic",
     "compression_type": "snappy"
   },
   "producer": {
-    "interval_ms": 36,
+    "interval_ms": 100,
     "batch_size": 100,
     "max_retries": 3,
     "initial_retry_delay_ms": 3000
