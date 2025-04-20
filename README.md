@@ -608,55 +608,40 @@ class DataStorage:
 
 ### Metrics Collection
 
-The system uses Prometheus for comprehensive metrics collection across all components:
+The system uses Prometheus for comprehensive metrics collection across all components. The `Application Monitoring` dashboard provides a consolidated view:
 
 #### Kafka Metrics
 
-- **Broker Health**: Online status and response times of brokers
-- **Topic Partitions**: Number of partitions per topic
-- **Partition State**: Distribution of leaders and followers
-- **Replication Status**: Replication factor and number of in-sync replicas
-- **Message Processing Rate**: Messages processed per second (produced/consumed)
-- **Byte Processing Rate**: Bytes processed per second (in/out)
-- **Consumer Lag**: Number of messages by which consumers lag behind producers
-- **Consumer Group Members**: Number of active consumers in groups
+- **Broker Health**: Basic `up` status shown in the Application Monitoring dashboard.
+- **Message Processing Rate**: Messages processed per second, shown _per consumer instance_.
+- **Consumer Lag**: Number of messages by which consumers lag behind producers, shown _per consumer instance_.
+  _Note: More detailed Kafka metrics (like partition details) can be found in the dedicated `Kafka Monitoring` dashboard._
 
 #### Zookeeper Metrics
 
-- **Service Health**: Online status and response times
-- **Node Status**: Leader/follower state
-- **Connection Count**: Number of client connections
-- **Request Rate**: Requests processed per second
+- **Service Health**: Basic `up` status shown in the Application Monitoring dashboard.
 
 #### Producer Metrics
 
-- **Operational Status**: Online status and health checks
-- **Message Production Rate**: Messages produced per second
-- **Batch Size**: Average batch size
-- **Error Rate**: Percentage of failed message deliveries
-- **Latency**: Time taken to send messages to Kafka
-
-The producer metrics are collected using Prometheus and can be visualized using Grafana dashboards. The metrics provide insights into the performance and health of the producer component.
+- **Message Production Rate**: Messages produced per second.
+- **Batch Size**: Average batch size.
+- **Error Rate**: Rate of failed message deliveries.
+- **Latency**: Time taken to send messages to Kafka.
 
 #### Consumer Metrics
 
-- **Operational Status**: Online status and health checks
-- **Message Consumption Rate**: Messages processed per second
-- **Offset Commit Frequency**: Rate of consumption position commits
-- **Error Rate**: Percentage of message processing failures
+- **Message Consumption Rate**: Messages processed per second, shown _per consumer instance_.
+- **Error Rate**: Rate of message processing failures, shown _per consumer instance_.
+- **Processing Time**: Time spent processing messages, including MongoDB write latency, shown _per consumer instance_.
 
 #### MongoDB Metrics
 
-- **Service Health**: Online status and response times
-- **Connection Count**: Number of active connections
-- **Operation Counters**: Read/write/update/delete operation counts
-- **Collection Size**: Data collection growth rate
+- **Service Health**: Basic `up` status shown in the Application Monitoring dashboard.
 
 #### System-level Metrics
 
-- **Container Status**: Running state of all Docker containers
-- **Service Restart Count**: Frequency of container restarts
-- **Resource Usage**: Basic CPU, memory, and disk usage percentages
+- **Basic Service Health**: `up` status for core infrastructure components.
+- **Resource Usage**: CPU Usage and Network I/O are displayed.
 
 ### Prometheus Configuration
 
@@ -670,18 +655,9 @@ monitoring/prometheus/prometheus.yml
 
 The monitoring system includes the following Grafana dashboards:
 
-- **System Overview**: Health status of all components and key metrics
-- **Kafka Monitoring**: Broker status, topic partition state, consumer lag
-- **Application Monitoring**: Producer and consumer status, error rates
-- **Persistence Monitoring**: MongoDB connection state, operation counts
-
-### Alerts
-
-Basic alert rules configured in Prometheus:
-
-- **Service Unavailability**: When any critical service is unreachable for 1 minute
-- **High Consumer Lag**: When consumer lag exceeds 10,000 messages for 5 minutes
-- **Disk Space Low**: When remaining space is below 20%
+- **System Overview**: High-level health status of infrastructure components and key system metrics (CPU, Network). _(This dashboard seems to have overlapping information with Application Monitoring)_
+- **Kafka Monitoring**: Detailed Kafka-specific metrics like broker status, topic partition state, consumer lag.
+- **Application Monitoring**: Consolidated view of producer and consumer application-level metrics (rates, errors, latency, lag, processing time) along with basic infrastructure health.
 
 ### Logging
 
